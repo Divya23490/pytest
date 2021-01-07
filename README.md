@@ -17,43 +17,46 @@ In order to create a new test case using the Framework, you have to follow the b
 In locators module, create a new locator for the element you would like to use, as below:
 
   [{
-      "pageName": "HomePage",
-      "name": "link_login",
-      "locateUsing": "xpath",
-      "locator": "//a[contains(text(),'Log In')]"
+    "pageName": "SearchPage",
+    "name": "search",
+    "locateUsing": "xpath",
+    "locator": "//input[contains(@title,'Search')]"
+
   }]
 In test data module, add the test data needed for your test case, as below:
 
-  {
-      "environment": "https://learn.letskodeit.com/",
-      "browser": "firefox",
-      "email": "test@email.com",
-      "password": "abcabc"
-  }
+ {
+    "environment": "https://www.google.de/",
+    "browser": "chrome",
+    "input_value": "relayr",
+    "input_search":"amazon"
+
+}
 If the element exist in more than one page (Navigation element), use navigation module to create a script for that navigation bar and add your navigation action to that element, as below:
 
   def goToLoginPage(self):
       self.elementClick(*self.locator(self.homePage_locators, 'link_login'))
-If the element exists in only one page, go to page module and create a new script for that page e.g: login_page.py and add all the actions in that page, as below:
+If the element exists in only one page, go to page module and create a new script for that page e.g: search_page.py and add all the actions in that page, as below:
 
-  def login(self, email, password):
-      self.sendKeys(email, *self.locator(self.loginPage_locators, 'input_email'))
-      self.sendKeys(password, *self.locator(self.loginPage_locators, 'input_password'))
-      self.elementClick(*self.locator(self.loginPage_locators, 'btn_login'))
+      def search(self, input_value):
+        self.elementClick(*self.locator(self.searchPage_locators, 'search'))
+        self.sendKeys(input_value, *self.locator(self.searchPage_locators, 'search'))
+        self.elementClick(*self.locator(self.searchPage_locators, 'search_button'))
+        self.elementClick(*self.locator(self.searchPage_locators, 'first_result'))
+        self.elementClick(*self.locator(self.searchPage_locators, 'logo_img'))
 Then, in test module, create a new script for your test case(s) e.g: test_login.py and add your test case, as below:
 
-  @allure.story('epic_1') # story of the test case
-  @allure.severity(allure.severity_level.MINOR) # severity of the test case
-  @pytestrail.case('C48') # test case id on test rail
-  def test_login_successfully(self):
-  
-      with allure.step('Navigate to login page'): # name of the test step
-          self.homeNavigation.goToLoginPage()
-          self.ts.markFinal(self.loginPage.isAt, "navigation to login page failed") # check if the navigation to login page occurs successfully
+  @allure.story('epic_1') # epic/story of the test case
+    @allure.severity(allure.severity_level.MINOR) # severity of the test case
+    # @pytestrail.case('C48') # test case if on TestRail
+    def test_login_successfully(self):
+        with allure.step('Navigate to Google page'):
+            self.ts.markFinal(self.searchPage.isAt, "navigation to Google home page failed")
 
-      with allure.step('Login'): # name of the test step
-          self.loginPage.login(email=td.testData("email"), password=td.testData("password"))
-          self.ts.markFinal(self.dashboardPage.isAt, "login failed") # check if login successfully
+        with allure.step('Search'):
+            self.searchPage.search(input_value=td.testData("input_value"))
+            self.ts.markFinal(self.searchPage.isAt, "Search failed")
+
 Notes:
 
 use @allure.story('[epic name]') decorator before each test case to define the related epic / story.
